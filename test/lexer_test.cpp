@@ -1,11 +1,10 @@
 // LCOV_EXCL_START
 #include <iostream>
+#include <string>
 
 #include "../src/lexer.h"
 #include "../src/token.h"
 #include "gtest/gtest.h"
-
-
 
 TEST(Lexer, DefaultConstructor)
 {
@@ -14,27 +13,264 @@ TEST(Lexer, DefaultConstructor)
     EXPECT_TRUE(lexer.hasTokens());
 }
 
-TEST(Lexer, StringToken) {
+TEST(Lexer, IdentifierToken)
+{
     std::stringstream helloWorld{"hello world "};
     lua::Lexer lexer{helloWorld};
-    EXPECT_EQ(lexer.getToken()->ToString(), lua::StringToken("hello").ToString());
-    EXPECT_EQ(lexer.getToken()->ToString(), lua::StringToken("world").ToString());
+
+    lua::Token *t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("hello"));
+
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("world"));
 }
 
-TEST(Lexer, NumberToken) {
+TEST(Lexer, NumberToken)
+{
     std::stringstream helloWorld{" 1 23 "};
     lua::Lexer lexer{helloWorld};
-    EXPECT_EQ(lexer.getToken()->ToNumber(), lua::NumberToken(1).ToNumber());
-    EXPECT_EQ(lexer.getToken()->ToNumber(), lua::NumberToken(23).ToNumber());
+    lua::Token *t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
+    EXPECT_EQ(t->ToNumber(), 1);
+
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
+    EXPECT_EQ(t->ToNumber(), 23);
+}
+
+TEST(Lexer, StringToken)
+{
+    std::stringstream helloWorld{" \"hello world\" "};
+    lua::Lexer lexer{helloWorld};
+    lua::Token *t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_STRING);
+    EXPECT_EQ(t->ToString(), std::string("hello world"));
 }
 
 TEST(Lexer, EndOfTokens)
 {
-    std::stringstream helloWorld{"hello world"};
+    std::stringstream helloWorld{" hello world1 123 "};
     lua::Lexer lexer{helloWorld};
+
     EXPECT_TRUE(lexer.hasTokens());
-    EXPECT_EQ(lexer.getToken()->ToString(), lua::StringToken("hello").ToString());
-    EXPECT_EQ(lexer.getToken()->ToString(), lua::StringToken("world").ToString());
-    EXPECT_EQ(lexer.getToken()->Type(), lua::TOKEN_NULL);
+
+    lua::Token *t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("hello"));
+
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("world1"));
+
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
+    EXPECT_EQ(t->ToNumber(), 123);
+
+    EXPECT_FALSE(lexer.hasTokens());
 }
+
+TEST(Lexer, EmptyStream)
+{
+    std::stringstream helloWorld{""};
+    lua::Lexer lexer{helloWorld};
+
+    EXPECT_FALSE(lexer.hasTokens());
+
+    lua::Token *t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_NULL);
+}
+
+TEST(Lexer, Parens)
+{
+    std::stringstream helloWorld{"hello (world)"};
+    lua::Lexer lexer{helloWorld};
+
+    // "hello"
+    lua::Token *t = lexer.getToken();
+
+    // "("
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
+
+    // "world"
+    t = lexer.getToken();
+
+    // ")"
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
+}
+
+TEST(Lexer, HelloWorld)
+{
+    std::stringstream helloWorld{"print(\"Hello World\")"};
+    lua::Lexer lexer{helloWorld};
+
+    // "print"
+    lua::Token *t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("print"));
+
+    // "("
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
+
+    // "\"Hello World\""
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_STRING);
+    EXPECT_EQ(t->ToString(), std::string("Hello World"));
+
+    // ")"
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
+}
+
+TEST(Lexer, FactorialFunction)
+{
+    std::stringstream factorial{R"(
+    -- defines a factorial function
+    function fact (n)
+      if n == 0 then
+        return 1
+      else
+        return n * fact(n-1)
+      end
+    end
+
+    print("enter a number:")
+    a = io.read("*number")      -- read a number
+    print(fact(a))
+    )"};
+    lua::Lexer lexer{factorial};
+
+    lua::Token *expectedTokens[] = {
+        new lua::CommentToken("defines a factorial function"),
+
+        new lua::IdentifierToken("function"),
+        new lua::IdentifierToken("fact"),
+        new lua::LParenToken(),
+        new lua::IdentifierToken("n"),
+        new lua::RParenToken(),
+
+        new lua::IdentifierToken("if"),
+        new lua::IdentifierToken("n"),
+
+        new lua::OperatorToken("=="),
+        new lua::NumberToken(0),
+        new lua::IdentifierToken("then"),
+        new lua::IdentifierToken("return"),
+        new lua::NumberToken(1),
+        new lua::IdentifierToken("else"),
+        new lua::IdentifierToken("return"),
+        new lua::IdentifierToken("n"),
+        new lua::OperatorToken("*"),
+        new lua::IdentifierToken("fact"),
+        new lua::LParenToken(),
+        new lua::IdentifierToken("n"),
+        new lua::OperatorToken("-"),
+        new lua::NumberToken(1),
+        new lua::RParenToken(),
+        new lua::IdentifierToken("end"),
+        new lua::IdentifierToken("end"),
+
+        new lua::IdentifierToken("print"),
+        new lua::LParenToken(),
+        new lua::StringToken("enter a number:"),
+        new lua::RParenToken(),
+
+        new lua::IdentifierToken("a"),
+        new lua::OperatorToken("="),
+        new lua::IdentifierToken("io"),
+        new lua::OperatorToken("."),
+        new lua::IdentifierToken("read"),
+        new lua::LParenToken(),
+        new lua::StringToken("*number"),
+        new lua::RParenToken(),
+        new lua::CommentToken("read a number"),
+
+        new lua::IdentifierToken("print"),
+        new lua::LParenToken(),
+        new lua::IdentifierToken("fact"),
+        new lua::LParenToken(),
+        new lua::IdentifierToken("a"),
+        new lua::RParenToken(),
+        new lua::RParenToken(),
+
+    };
+
+    EXPECT_TRUE(lexer.hasTokens());
+
+    for (int i = 0; lexer.hasTokens(); ++i)
+    {
+        lua::Token *t = lexer.getToken();
+        std::cout << t->ToString() << "] --vs-- [" << expectedTokens[i]->ToString() << std::endl;
+        EXPECT_EQ(t->Type(), expectedTokens[i]->Type());
+        EXPECT_EQ(t->ToString(), expectedTokens[i]->ToString());
+    }
+
+    /*
+
+    // -- defines a factorial function
+    lua::Token *t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_COMMENT);
+    EXPECT_EQ(t->ToString(), std::string("defines a factorial function"));
+
+    // function
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("function"));
+
+    // fact
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("fact"));
+
+    // (
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
+    EXPECT_EQ(t->ToString(), std::string("("));
+
+    // n
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("n"));
+
+    // )
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
+    EXPECT_EQ(t->ToString(), std::string(")"));
+
+    // if
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("if"));
+
+    // n
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("n"));
+
+    // ==
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_OPERATOR);
+    EXPECT_EQ(t->ToString(), std::string("=="));
+
+    // 0
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
+    EXPECT_EQ(t->ToNumber(), 0);
+
+    // then
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("then"));
+
+    // then
+    t = lexer.getToken();
+    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
+    EXPECT_EQ(t->ToString(), std::string("return"));
+    */
+}
+
 // LCOV_EXCL_STOP

@@ -52,3 +52,6 @@ packagecache
 .cache/*
 .bash_history
 .gitconfig
+
+core
+.shrc

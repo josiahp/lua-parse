@@ -4,6 +4,7 @@
 
 #include "lexer.h"
 #include "token.h"
+#include "parser.h"
 
 //namespace lua
 //{
@@ -142,5 +143,11 @@
 
 int main(int argc, char *argv[])
 {
-    return 0;
+    std::stringstream helloWorld{"print(\"Hello World\")"};
+    lua::Lexer lexer{helloWorld};
+    lua::Parser parser{lexer};
+
+    lua::ProgramNode *p = parser.Parse();
+
+    std::cout << p->ToString(1) << std::endl;
 }

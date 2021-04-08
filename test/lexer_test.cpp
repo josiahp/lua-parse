@@ -204,73 +204,9 @@ TEST(Lexer, FactorialFunction)
     for (int i = 0; lexer.hasTokens(); ++i)
     {
         lua::Token *t = lexer.getToken();
-        std::cout << t->ToString() << "] --vs-- [" << expectedTokens[i]->ToString() << std::endl;
         EXPECT_EQ(t->Type(), expectedTokens[i]->Type());
         EXPECT_EQ(t->ToString(), expectedTokens[i]->ToString());
     }
-
-    /*
-
-    // -- defines a factorial function
-    lua::Token *t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_COMMENT);
-    EXPECT_EQ(t->ToString(), std::string("defines a factorial function"));
-
-    // function
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
-    EXPECT_EQ(t->ToString(), std::string("function"));
-
-    // fact
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
-    EXPECT_EQ(t->ToString(), std::string("fact"));
-
-    // (
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
-    EXPECT_EQ(t->ToString(), std::string("("));
-
-    // n
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
-    EXPECT_EQ(t->ToString(), std::string("n"));
-
-    // )
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
-    EXPECT_EQ(t->ToString(), std::string(")"));
-
-    // if
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
-    EXPECT_EQ(t->ToString(), std::string("if"));
-
-    // n
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
-    EXPECT_EQ(t->ToString(), std::string("n"));
-
-    // ==
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_OPERATOR);
-    EXPECT_EQ(t->ToString(), std::string("=="));
-
-    // 0
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
-    EXPECT_EQ(t->ToNumber(), 0);
-
-    // then
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
-    EXPECT_EQ(t->ToString(), std::string("then"));
-
-    // then
-    t = lexer.getToken();
-    EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
-    EXPECT_EQ(t->ToString(), std::string("return"));
-    */
 }
 
 // LCOV_EXCL_STOP

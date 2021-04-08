@@ -10,7 +10,7 @@ TEST(Lexer, DefaultConstructor)
 {
     std::stringstream helloWorld{"hello world"};
     lua::Lexer lexer{helloWorld};
-    EXPECT_TRUE(lexer.hasTokens());
+    EXPECT_TRUE(lexer.HasTokens());
 }
 
 TEST(Lexer, IdentifierToken)
@@ -18,11 +18,11 @@ TEST(Lexer, IdentifierToken)
     std::stringstream helloWorld{"hello world "};
     lua::Lexer lexer{helloWorld};
 
-    lua::Token *t = lexer.getToken();
+    lua::Token *t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("hello"));
 
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("world"));
 }
@@ -31,11 +31,11 @@ TEST(Lexer, NumberToken)
 {
     std::stringstream helloWorld{" 1 23 "};
     lua::Lexer lexer{helloWorld};
-    lua::Token *t = lexer.getToken();
+    lua::Token *t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
     EXPECT_EQ(t->ToNumber(), 1);
 
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
     EXPECT_EQ(t->ToNumber(), 23);
 }
@@ -44,7 +44,7 @@ TEST(Lexer, StringToken)
 {
     std::stringstream helloWorld{" \"hello world\" "};
     lua::Lexer lexer{helloWorld};
-    lua::Token *t = lexer.getToken();
+    lua::Token *t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_STRING);
     EXPECT_EQ(t->ToString(), std::string("hello world"));
 }
@@ -54,21 +54,21 @@ TEST(Lexer, EndOfTokens)
     std::stringstream helloWorld{" hello world1 123 "};
     lua::Lexer lexer{helloWorld};
 
-    EXPECT_TRUE(lexer.hasTokens());
+    EXPECT_TRUE(lexer.HasTokens());
 
-    lua::Token *t = lexer.getToken();
+    lua::Token *t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("hello"));
 
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("world1"));
 
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
     EXPECT_EQ(t->ToNumber(), 123);
 
-    EXPECT_FALSE(lexer.hasTokens());
+    EXPECT_FALSE(lexer.HasTokens());
 }
 
 TEST(Lexer, EmptyStream)
@@ -76,9 +76,9 @@ TEST(Lexer, EmptyStream)
     std::stringstream helloWorld{""};
     lua::Lexer lexer{helloWorld};
 
-    EXPECT_FALSE(lexer.hasTokens());
+    EXPECT_FALSE(lexer.HasTokens());
 
-    lua::Token *t = lexer.getToken();
+    lua::Token *t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NULL);
 }
 
@@ -88,17 +88,17 @@ TEST(Lexer, Parens)
     lua::Lexer lexer{helloWorld};
 
     // "hello"
-    lua::Token *t = lexer.getToken();
+    lua::Token *t = lexer.GetToken();
 
     // "("
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
 
     // "world"
-    t = lexer.getToken();
+    t = lexer.GetToken();
 
     // ")"
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
 }
 
@@ -108,21 +108,21 @@ TEST(Lexer, HelloWorld)
     lua::Lexer lexer{helloWorld};
 
     // "print"
-    lua::Token *t = lexer.getToken();
+    lua::Token *t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("print"));
 
     // "("
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
 
     // "\"Hello World\""
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_STRING);
     EXPECT_EQ(t->ToString(), std::string("Hello World"));
 
     // ")"
-    t = lexer.getToken();
+    t = lexer.GetToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
 }
 
@@ -199,11 +199,11 @@ TEST(Lexer, FactorialFunction)
 
     };
 
-    EXPECT_TRUE(lexer.hasTokens());
+    EXPECT_TRUE(lexer.HasTokens());
 
-    for (int i = 0; lexer.hasTokens(); ++i)
+    for (int i = 0; lexer.HasTokens(); ++i)
     {
-        lua::Token *t = lexer.getToken();
+        lua::Token *t = lexer.GetToken();
         EXPECT_EQ(t->Type(), expectedTokens[i]->Type());
         EXPECT_EQ(t->ToString(), expectedTokens[i]->ToString());
     }

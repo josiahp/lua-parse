@@ -9,15 +9,29 @@ namespace lua
     {
         if (m_input.good())
             m_input >> std::ws;
+
+        m_currentToken = new NullToken();
+        m_nextToken = ParseNextToken();
     }
 
-    bool Lexer::hasTokens() const
+    bool Lexer::HasTokens() const
     {
-        return m_input.good();
+        return m_input.good() || m_nextToken->Type() != TOKEN_NULL;
     }
 
-    Token *Lexer::getToken()
+    Token* Lexer::PeekNextToken() const {
+        return m_nextToken;
+    }
+
+    Token *Lexer::GetToken()
     {
+        delete m_currentToken;
+        m_currentToken = m_nextToken;
+        m_nextToken = ParseNextToken();
+        return m_currentToken;
+    }
+
+    Token *Lexer::ParseNextToken() {
         Token *tok = nullptr;
         unsigned char c;
 

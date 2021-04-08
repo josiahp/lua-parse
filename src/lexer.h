@@ -10,10 +10,12 @@ namespace lua
     {
     public:
         Lexer(std::iostream &input);
-        Token *getToken();
-        bool hasTokens() const;
+        Token *GetToken();
+        Token *PeekNextToken() const;
+        bool HasTokens() const;
 
     private:
+        Token* ParseNextToken();
         StringToken *ReadStringToken(unsigned char);
         IdentifierToken *ReadIdentifierToken(unsigned char);
         NumberToken *ReadNumberToken();
@@ -23,6 +25,7 @@ namespace lua
         Token *ReadMulticharacterToken(unsigned char);
 
         std::iostream &m_input;
-        //Token* m_currentToken;
+        Token* m_currentToken;
+        Token* m_nextToken;
     };
 }

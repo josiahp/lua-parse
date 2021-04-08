@@ -1,9 +1,11 @@
 FROM debian:latest
 
 ENV CC=/usr/bin/gcc \
-    CXX=/usr/bin/g++
+    CXX=/usr/bin/g++ \
+    EDITOR="code --wait" \
+    PROMPT='%~ %# '
 
-RUN apt-get update && apt-get install -y gcc g++ build-essential cmake git libc6-dev gdb lcov ninja-build meson curl nodejs npm
+RUN apt-get update && apt-get install -y gcc g++ build-essential git libc6-dev gdb lcov ninja-build meson curl nodejs npm zsh
 RUN npm install --global http-server
 
 RUN curl -L -o /usr/local/src/googletest-1.10.0.tar.gz https://github.com/google/googletest/archive/refs/tags/release-1.10.0.tar.gz \
@@ -13,7 +15,9 @@ RUN curl -L -o /usr/local/src/googletest-1.10.0.tar.gz https://github.com/google
  && make all install
 
 RUN useradd -m -u 1000 -U josiahp
+RUN chsh -s /bin/zsh josiahp
 USER josiahp
+RUN touch ~/.zshrc
 
 WORKDIR /home/josiahp
 

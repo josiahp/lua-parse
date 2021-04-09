@@ -22,7 +22,7 @@ namespace lua
     virtual ~Node() = 0;
         virtual NodeType Type() const = 0;
         virtual std::string TypeAsString() const = 0;
-        virtual std::string ToString() const = 0;
+        //virtual std::string ToString() const = 0;
         virtual std::string ToString(int depth) const = 0;
     };
 
@@ -45,7 +45,7 @@ namespace lua
         public:
         virtual NodeType Type() const = 0;
                 virtual std::string TypeAsString() const = 0;
-        virtual std::string ToString() const = 0;
+       // virtual std::string ToString() const = 0;
                 virtual std::string ToString(int depth) const = 0;
         
         //virtual NodeType Type() const = 0;
@@ -60,7 +60,7 @@ namespace lua
         void Append(StatementNode *s);
         std::vector<StatementNode *> Body() const { return m_statementNodes; }
 
-        std::string ToString() const { this->ToString(1); }
+        //std::string ToString() const { this->ToString(1); }
         std::string ToString(int depth = 1) const;
 
     private:
@@ -72,7 +72,7 @@ namespace lua
         public:
         virtual NodeType Type() const = 0;
                 virtual std::string TypeAsString() const = 0;
-        virtual std::string ToString() const = 0;
+        //virtual std::string ToString() const = 0;
         virtual std::string ToString(int depth) const = 0;
     };
 
@@ -82,7 +82,7 @@ namespace lua
         NodeType Type() const override { return NODE_EXPRESSION_STRING; }
                 std::string TypeAsString() const override { return "StringExpression"; }
 
-        std::string ToString() const override { return this->ToString(1); }
+        //std::string ToString() const override { return this->ToString(1); }
         std::string ToString(int depth = 1) const override;
 
         StringExpressionNode(std::string value) : value(value) {};
@@ -110,12 +110,14 @@ namespace lua
 
         NodeType Type() const override { return NODE_STATEMENT_FUNCTIONCALL; }
                 std::string TypeAsString() const override { return "FunctionCallStatement"; }
-
-        std::string ToString() const override { return this->ToString(1); }
         std::string ToString(int depth = 1) const override;
 
         FunctionCallStatementNode(std::string prefixExp, std::vector<ExpressionNode*> args) : prefixExpression(prefixExp), args(args){};
         FunctionCallStatementNode(std::string prefixExp) : prefixExpression(prefixExp) {};
+
+        void AppendArg(ExpressionNode* arg) {
+            args.push_back(arg);
+        }
 
     };
 

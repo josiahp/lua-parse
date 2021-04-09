@@ -18,11 +18,11 @@ TEST(Lexer, IdentifierToken)
     std::stringstream helloWorld{"hello world "};
     lua::Lexer lexer{helloWorld};
 
-    lua::Token *t = lexer.GetToken();
+    lua::Token *t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("hello"));
 
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("world"));
 }
@@ -31,11 +31,11 @@ TEST(Lexer, NumberToken)
 {
     std::stringstream helloWorld{" 1 23 "};
     lua::Lexer lexer{helloWorld};
-    lua::Token *t = lexer.GetToken();
+    lua::Token *t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
     EXPECT_EQ(t->ToNumber(), 1);
 
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
     EXPECT_EQ(t->ToNumber(), 23);
 }
@@ -44,7 +44,7 @@ TEST(Lexer, StringToken)
 {
     std::stringstream helloWorld{" \"hello world\" "};
     lua::Lexer lexer{helloWorld};
-    lua::Token *t = lexer.GetToken();
+    lua::Token *t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_STRING);
     EXPECT_EQ(t->ToString(), std::string("hello world"));
 }
@@ -56,15 +56,15 @@ TEST(Lexer, EndOfTokens)
 
     EXPECT_TRUE(lexer.HasTokens());
 
-    lua::Token *t = lexer.GetToken();
+    lua::Token *t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("hello"));
 
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("world1"));
 
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NUMBER);
     EXPECT_EQ(t->ToNumber(), 123);
 
@@ -78,7 +78,7 @@ TEST(Lexer, EmptyStream)
 
     EXPECT_FALSE(lexer.HasTokens());
 
-    lua::Token *t = lexer.GetToken();
+    lua::Token *t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_NULL);
 }
 
@@ -88,17 +88,17 @@ TEST(Lexer, Parens)
     lua::Lexer lexer{helloWorld};
 
     // "hello"
-    lua::Token *t = lexer.GetToken();
+    lua::Token *t = lexer.GetNextToken();
 
     // "("
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
 
     // "world"
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
 
     // ")"
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
 }
 
@@ -108,21 +108,21 @@ TEST(Lexer, HelloWorld)
     lua::Lexer lexer{helloWorld};
 
     // "print"
-    lua::Token *t = lexer.GetToken();
+    lua::Token *t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_IDENTIFIER);
     EXPECT_EQ(t->ToString(), std::string("print"));
 
     // "("
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_LPAREN);
 
     // "\"Hello World\""
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_STRING);
     EXPECT_EQ(t->ToString(), std::string("Hello World"));
 
     // ")"
-    t = lexer.GetToken();
+    t = lexer.GetNextToken();
     EXPECT_EQ(t->Type(), lua::TOKEN_RPAREN);
 }
 
@@ -203,7 +203,7 @@ TEST(Lexer, FactorialFunction)
 
     for (int i = 0; lexer.HasTokens(); ++i)
     {
-        lua::Token *t = lexer.GetToken();
+        lua::Token *t = lexer.GetNextToken();
         EXPECT_EQ(t->Type(), expectedTokens[i]->Type());
         EXPECT_EQ(t->ToString(), expectedTokens[i]->ToString());
     }

@@ -19,11 +19,15 @@ namespace lua
         return m_input.good() || m_nextToken->Type() != TOKEN_NULL;
     }
 
+    Token* Lexer::CurrentToken() const {
+        return m_currentToken;
+    }
+
     Token* Lexer::PeekNextToken() const {
         return m_nextToken;
     }
 
-    Token *Lexer::GetToken()
+    Token *Lexer::GetNextToken()
     {
         delete m_currentToken;
         m_currentToken = m_nextToken;
@@ -64,6 +68,9 @@ namespace lua
                 break;
             case ')':
                 tok = ReadRParenToken();
+                break;
+            case ',':
+                tok = ReadCommaToken();
                 break;
             case '-':
             case '=':
@@ -137,6 +144,13 @@ namespace lua
         // We already know it's a right paren so chomp off the known character.
         m_input.get();
         return new RParenToken();
+    }
+
+    CommaToken *Lexer::ReadCommaToken()
+    {
+        // We already know it's a right paren so chomp off the known character.
+        m_input.get();
+        return new CommaToken();
     }
 
     CommentToken *Lexer::ReadCommentToken()

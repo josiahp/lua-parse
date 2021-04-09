@@ -10,7 +10,8 @@ namespace lua
     {
     public:
         Lexer(std::iostream &input);
-        Token *GetToken();
+        Token *GetNextToken();
+        Token *CurrentToken() const;
         Token *PeekNextToken() const;
         bool HasTokens() const;
 
@@ -21,6 +22,7 @@ namespace lua
         NumberToken *ReadNumberToken();
         LParenToken *ReadLParenToken();
         RParenToken *ReadRParenToken();
+        CommaToken *ReadCommaToken();
         CommentToken *ReadCommentToken();
         Token *ReadMulticharacterToken(unsigned char);
 

@@ -13,7 +13,8 @@ namespace lua
         TOKEN_LPAREN,
         TOKEN_RPAREN,
         TOKEN_COMMENT,
-        TOKEN_OPERATOR
+        TOKEN_OPERATOR,
+        TOKEN_COMMA
     };
 
     class Token
@@ -83,6 +84,14 @@ namespace lua
     public:
         TokenType Type() const override { return TOKEN_RPAREN; }
         std::string ToString() const { return ")"; }
+        uint64_t ToNumber() const { return 0; }
+    };
+
+    class CommaToken : public Token
+    {
+    public:
+        TokenType Type() const override { return TOKEN_COMMA; }
+        std::string ToString() const { return ","; }
         uint64_t ToNumber() const { return 0; }
     };
 

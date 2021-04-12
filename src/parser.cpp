@@ -19,15 +19,6 @@ namespace lua
         StatementNode *s = ReadStatementNode();
 
         p->Append(s);
-        /*
-        while (m_lexer.hasTokens()) {
-            Token *t = m_lexer.getToken();
-
-            switch(t->Type()) {
-                case TOKEN_IDENTIFIER:
-                    FunctionCallStatementNode *f = new FunctionCallStatementNode(t->ToString());
-            }
-        }*/
 
         return p;
     }

@@ -19,7 +19,7 @@ namespace lua
     class Node
     {
     public:
-    virtual ~Node() = 0;
+        virtual ~Node() = 0;
         virtual NodeType Type() const = 0;
         virtual std::string TypeAsString() const = 0;
         //virtual std::string ToString() const = 0;
@@ -30,38 +30,44 @@ namespace lua
     {
         virtual NodeType Type() const = 0;
         virtual std::string TypeAsString() const = 0;
-
     };
 
     class NonTerminalNode : public Node
     {
         virtual NodeType Type() const = 0;
         virtual std::string TypeAsString() const = 0;
-
     };
 
     class StatementNode : public TerminalNode
     {
-        public:
+    public:
         virtual NodeType Type() const = 0;
-                virtual std::string TypeAsString() const = 0;
-       // virtual std::string ToString() const = 0;
-                virtual std::string ToString(int depth) const = 0;
-        
-        //virtual NodeType Type() const = 0;
+        virtual std::string TypeAsString() const = 0;
+        virtual std::string ToString(int depth = 0) const = 0;
+        virtual inline bool operator==(const StatementNode &rhs) const = 0;
     };
 
     class ProgramNode : public NonTerminalNode
     {
     public:
+        ProgramNode(std::vector<StatementNode *> statements = std::vector<StatementNode *>()) : m_statementNodes(statements){};
+
         NodeType Type() const override { return NODE_PROGRAM; }
         std::string TypeAsString() const override { return "Program"; }
 
         void Append(StatementNode *s);
         std::vector<StatementNode *> Body() const { return m_statementNodes; }
 
-        //std::string ToString() const { this->ToString(1); }
-        std::string ToString(int depth = 1) const;
+        std::string ToString(int depth = 0) const;
+
+        inline friend std::ostream &operator<<(std::ostream &os, const ProgramNode &p)
+        {
+            return os << p.ToString();
+        }
+        inline friend bool operator==(const ProgramNode &lhs, const ProgramNode &rhs)
+        {
+              return std::equal(lhs.m_statementNodes.cbegin(), lhs.m_statementNodes.cend(), rhs.m_statementNodes.cbegin(), [](const StatementNode *lhs, const StatementNode *rhs) { return *lhs == *rhs; });
+        }
 
     private:
         std::vector<StatementNode *> m_statementNodes;
@@ -69,25 +75,29 @@ namespace lua
 
     class ExpressionNode : public NonTerminalNode
     {
-        public:
+    public:
         virtual NodeType Type() const = 0;
-                virtual std::string TypeAsString() const = 0;
-        //virtual std::string ToString() const = 0;
-        virtual std::string ToString(int depth) const = 0;
+        virtual std::string TypeAsString() const = 0;
+        virtual std::string ToString(int depth = 0) const = 0;
+        virtual inline bool operator==(const ExpressionNode &rhs) const = 0;
     };
 
     class StringExpressionNode : public ExpressionNode
     {
-        public:
+    public:
         NodeType Type() const override { return NODE_EXPRESSION_STRING; }
-                std::string TypeAsString() const override { return "StringExpression"; }
+        std::string TypeAsString() const override { return "StringExpression"; }
 
-        //std::string ToString() const override { return this->ToString(1); }
-        std::string ToString(int depth = 1) const override;
+        std::string ToString(int depth = 0) const override;
 
-        StringExpressionNode(std::string value) : value(value) {};
+        StringExpressionNode(std::string value) : value(value){};
 
         const std::string value;
+
+        inline bool operator==(const ExpressionNode &rhs) const
+        {
+            return this->Type() == rhs.Type() && this->value == dynamic_cast<const StringExpressionNode &>(rhs).value;
+        }
     };
 
     class FunctionCallExpressionNode : public ExpressionNode
@@ -106,19 +116,30 @@ namespace lua
 
     public:
         std::string prefixExpression;
-        std::vector<ExpressionNode*> args;
+        std::vector<ExpressionNode *> args;
 
         NodeType Type() const override { return NODE_STATEMENT_FUNCTIONCALL; }
-                std::string TypeAsString() const override { return "FunctionCallStatement"; }
+        std::string TypeAsString() const override { return "FunctionCallStatement"; }
         std::string ToString(int depth = 1) const override;
 
-        FunctionCallStatementNode(std::string prefixExp, std::vector<ExpressionNode*> args) : prefixExpression(prefixExp), args(args){};
-        FunctionCallStatementNode(std::string prefixExp) : prefixExpression(prefixExp) {};
+        FunctionCallStatementNode(std::string prefixExp, std::vector<ExpressionNode *> args) : prefixExpression(prefixExp), args(args){};
+        FunctionCallStatementNode(std::string prefixExp) : prefixExpression(prefixExp){};
 
-        void AppendArg(ExpressionNode* arg) {
+        void AppendArg(ExpressionNode *arg)
+        {
             args.push_back(arg);
         }
 
+        inline friend std::ostream &operator<<(std::ostream &os, const FunctionCallStatementNode &f)
+        {
+            return os << f.ToString();
+        }
+
+        inline bool operator==(const StatementNode &rhs) const override
+        {
+            return this->prefixExpression == dynamic_cast< const FunctionCallStatementNode& >(rhs).prefixExpression
+              && std::equal(this->args.cbegin(), this->args.cend(), dynamic_cast< const FunctionCallStatementNode& >(rhs).args.cbegin(), [](const ExpressionNode *lhs, const ExpressionNode *rhs) { return *lhs == *rhs; });
+        }
     };
 
     class Parser
@@ -127,9 +148,9 @@ namespace lua
         Parser(Lexer &lexer) : m_lexer(lexer){};
         ProgramNode *Parse();
 
-        StatementNode* ReadStatementNode();
+        StatementNode *ReadStatementNode();
         FunctionCallStatementNode *ReadFunctionCallStatementNode();
-        ExpressionNode* ReadExpressionNode();
+        ExpressionNode *ReadExpressionNode();
 
     private:
         Lexer &m_lexer;
